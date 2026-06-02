@@ -13,7 +13,7 @@ import Login from "./pages/Login";
 import Settings from "./pages/Settings";
 import Users from "./pages/Users";
 import PageNotFound from "./pages/PageNotFound";
-import ApplLayout from "./ui/ApplLayout";
+import AppLayout from "./ui/AppLayout";
 import Booking from "./pages/Booking";
 import Checkin from "./pages/Checkin";
 import ProtectedRoute from "./ui/ProtectedRoute";
@@ -43,7 +43,7 @@ function App() {
             <Route
               element={
                 <ProtectedRoute>
-                  <ApplLayout />
+                  <AppLayout />
                 </ProtectedRoute>
               }
             >
