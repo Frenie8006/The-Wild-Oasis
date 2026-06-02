@@ -1,3 +1,3 @@
-# The Wild Oasis
+# The Cabins Motel
 
-This project "The Wild Oasis" is originated by GREATE dev and TEACHER "Jonas Schmedthmann" from his course "The Ultimate React Course 2025: React, Next.js, Redux & More" in Udemy.
+This project, "The Cabins Motel," is based on the work of developer and instructor Jonas Schmedthmann from his Udemy course "The Ultimate React Course 2025: React, Next.js, Redux & More." 
