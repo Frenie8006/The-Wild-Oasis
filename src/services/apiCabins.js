@@ -67,3 +67,17 @@ export async function deleteCabin(id) {
     throw new Error("Cabins could not be deleted");
   }
 }
+
+export async function updateCabinPrice({ data: newCabin, id }) {
+  const { data, error } = await supabase
+    .from("cabins")
+    .update(newCabin)
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    console.error(error);
+    throw new Error("Cabin price could not be updated");
+  }
+  return data;
+}

@@ -4,6 +4,7 @@ import { HiSquare2Stack, HiPencil, HiTrash } from "react-icons/hi2";
 import { formatCurrency } from "../../utils/helpers";
 import { useCreateCabin } from "./useCreateCabin";
 import { useDeleteCabin } from "./useDeleteCabin";
+import { useUpdateCabinPrice } from "./useUpdateCabinPrice";
 
 import CreateCabinForm from "./CreateCabinForm";
 import Modal from "../../ui/Modal";
@@ -39,9 +40,11 @@ const Cabin = styled.div`
   font-family: "Sono";
 `;
 
-const Price = styled.div`
+const Price = styled.input`
+  color: #333;
   font-family: "Sono";
   font-weight: 600;
+  width: 65%;
 `;
 
 const Discount = styled.div`
@@ -53,6 +56,7 @@ const Discount = styled.div`
 function CabinRow({ cabin }) {
   const { isDeleting, deleteCabin } = useDeleteCabin();
   const { createCabin } = useCreateCabin();
+  const { isUpdating, updateCabin } = useUpdateCabinPrice();
 
   const {
     id: cabinId,
@@ -73,12 +77,28 @@ function CabinRow({ cabin }) {
     });
   }
 
+  function handleUpdate(e, field) {
+    const value = e.target.value;
+    if (!e) return;
+
+    updateCabin({ data: { [field]: value }, id: cabinId });
+  }
+
   return (
     <Table.Row>
       <Img src={image} alt={name} />
       <Cabin>{name}</Cabin>
       <div>Fits up to {maxCapacity} guests</div>
-      <Price>{formatCurrency(regularPrice)}</Price>
+      {/* <Price>{formatCurrency(regularPrice)}</Price> */}
+      <div>
+        <span>$</span>
+        <Price
+          type="number"
+          defaultValue={regularPrice}
+          onBlur={(e) => handleUpdate(e, "regularPrice")}
+          disabled={isUpdating}
+        />
+      </div>
       {discount ? (
         <Discount>{formatCurrency(discount)}</Discount>
       ) : (
