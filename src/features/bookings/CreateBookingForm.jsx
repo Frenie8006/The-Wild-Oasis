@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 import styled from "styled-components";
 import { useGuests } from "../guests/useGuests";
 import { useCabins } from "../cabins/useCabins";
@@ -9,6 +10,7 @@ import FormRow from "../../ui/FormRow";
 import Input from "../../ui/Input";
 import Button from "../../ui/Button";
 import FormSelect from "../../ui/FormSelect";
+import { useEditBooking } from "./useEditBooking";
 
 const StyledCheckbox = styled.input`
   height: 2.4rem;
@@ -33,43 +35,76 @@ const StyledTextarea = styled.textarea`
   resize: vertical;
 `;
 
-function CreateBookingForm({ onCloseModal }) {
+function CreateBookingForm({ bookingToEdit = {}, onCloseModal }) {
+  const {
+    id: editId,
+    cabins: cabinObject,
+    guests: guestObject,
+    ...editValues
+  } = bookingToEdit;
+  const cabinId = cabinObject?.id;
+  const guestId = guestObject?.id;
+  const isEditSession = Boolean(editId);
+
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm({
-    defaultValues: {
-      status: "",
-    },
+    defaultValues: isEditSession
+      ? { ...editValues, cabinId, guestId }
+      : {
+          status: "",
+        },
   });
   const { guests, isLoading: isLoading1 } = useGuests();
   const { cabins, isLoading: isLoading2 } = useCabins();
   const { createBooking, isCreating } = useCreateBooking();
+  const { updateBooking, isEditing } = useEditBooking();
+
+  // Re-apply defaultValues once both lists have loaded
+  useEffect(() => {
+    if (isEditSession && !isLoading1 && !isLoading2) {
+      reset({ ...editValues, cabinId, guestId });
+    }
+  }, [isLoading1, isLoading2]);
 
   function onSubmit(data) {
     const currentCabin = cabins.find((cabin) => cabin.id === data.cabinId);
 
-    createBooking(
-      {
-        ...data,
-        hasBreakfast: Boolean(data.extrasPrice),
-        cabinPrice: currentCabin?.regularPrice ?? 0,
-        totalPrice:
-          currentCabin?.regularPrice * data.numNights + (data.extrasPrice || 0),
-        startDate: new Date().toISOString(), // For simplicity, using current date as start date
-        endDate: new Date(
-          Date.now() + data.numNights * 24 * 60 * 60 * 1000,
-        ).toISOString(), // Calculating end date based on number of nights
-      },
-      {
-        onSuccess: () => {
-          reset();
-          onCloseModal?.();
+    if (isEditSession) {
+      updateBooking(
+        { newBookingData: data, id: editId },
+        {
+          onSuccess: () => {
+            reset();
+            onCloseModal?.();
+          },
         },
-      },
-    );
+      );
+    } else {
+      createBooking(
+        {
+          ...data,
+          hasBreakfast: Boolean(data.extrasPrice),
+          cabinPrice: currentCabin?.regularPrice ?? 0,
+          totalPrice:
+            currentCabin?.regularPrice * data.numNights +
+            (data.extrasPrice || 0),
+          startDate: new Date().toISOString(), // For simplicity, using current date as start date
+          endDate: new Date(
+            Date.now() + data.numNights * 24 * 60 * 60 * 1000,
+          ).toISOString(), // Calculating end date based on number of nights
+        },
+        {
+          onSuccess: () => {
+            reset();
+            onCloseModal?.();
+          },
+        },
+      );
+    }
   }
 
   return (
@@ -151,13 +186,16 @@ function CreateBookingForm({ onCloseModal }) {
       <FormRow label="Select guest" error={errors?.guestId?.message}>
         <FormSelect
           options={[
-            { label: "-- Select a guest --", value: "" },
+            {
+              label: "-- Select a guest --",
+              value: "",
+            },
             ...(guests ?? []).map((guest) => ({
               label: `Guest #${guest.id} (${guest.fullName?.split(" ")[0]})`,
               value: guest.id,
             })),
           ]}
-          id="guests"
+          id="guestId"
           register={{
             ...register("guestId", {
               required: "This field is required",
@@ -175,7 +213,7 @@ function CreateBookingForm({ onCloseModal }) {
               value: cabin.id,
             })),
           ]}
-          id="cabins"
+          id="cabinId"
           register={{
             ...register("cabinId", {
               required: "This field is required",
@@ -191,6 +229,10 @@ function CreateBookingForm({ onCloseModal }) {
         <StyledTextarea
           {...register("observations", {
             maxLength: { value: 150, message: "At most 150 characters" },
+            max: {
+              value: 150,
+              message: "Number should not exceed 150",
+            },
           })}
         />
       </FormRow>

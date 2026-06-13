@@ -6,7 +6,7 @@ export async function getBookings({ filter, sortBy, page }) {
   let query = supabase
     .from("bookings")
     .select(
-      "id, created_at, startDate, endDate, numNights, numGuests, totalPrice, status, cabins(name), guests(fullName, email)",
+      "id, created_at, startDate, endDate, numNights, numGuests, totalPrice, status, extrasPrice, isPaid, observations, cabins(id, name), guests(id, fullName, email)",
       { count: "exact" },
     );
 
@@ -120,10 +120,10 @@ export async function getStaysTodayActivity() {
   return data;
 }
 
-export async function updateBooking(id, obj) {
+export async function updateBooking(newBooking, id) {
   const { data, error } = await supabase
     .from("bookings")
-    .update(obj)
+    .update(newBooking)
     .eq("id", id)
     .select()
     .single();

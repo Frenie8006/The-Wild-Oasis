@@ -83,7 +83,13 @@ function CreateGuestForm({ onCloseModal }) {
           type="text"
           id="nationalID"
           disabled={isCreating}
-          {...register("nationalID", { required: "This field is required" })}
+          {...register("nationalID", {
+            required: "This field is required",
+            pattern: {
+              value: /^[0-9]+$/,
+              message: "Only numbers are allowed",
+            },
+          })}
         />
       </FormRow>
       <FormRow label="Nationality" error={errors?.nationality?.message}>
